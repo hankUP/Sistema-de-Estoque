@@ -364,7 +364,7 @@ export function ItemFornecedoresEditor({
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent aria-describedby={undefined} className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{form.id ? "Editar vínculo de fornecedor" : "Adicionar fornecedor ao item"}</DialogTitle>
           </DialogHeader>
@@ -574,7 +574,7 @@ function PrecoHistoricoDialog({
 
   return (
     <Dialog open={!!fornecedorId} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent aria-describedby={undefined} className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Histórico de preços — {fornecedorNome}

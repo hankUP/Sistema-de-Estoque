@@ -484,14 +484,12 @@ export default function SugestaoComprasPage() {
         }
         return;
       }
-      // Modo Padrão: por urgência
-      if (s.urgencia === "COMPRAR_AGORA") {
-        if (s.disponivel <= 0 || (s.consumoDiario > 0 && s.disponivel < s.consumoDiario * s.lead_time_dias)) {
-          comprarAgora.push(s);
-        } else {
-          comprarEmBreve.push(s);
-        }
-      } else if (s.urgencia === "PROGRAMAR_COMPRA") {
+      // Modo Padrão: mesma regra do selo de prazo (prazoCompra), para grupo e selo nunca divergirem.
+      // Estoque zerado ou abaixo do mínimo conta mesmo sem consumo registrado.
+      const acabaAntesLeadTime = s.consumoDiario > 0 && s.disponivel < s.consumoDiario * s.lead_time_dias;
+      if (s.disponivel <= 0 || acabaAntesLeadTime) {
+        comprarAgora.push(s);
+      } else if (s.disponivel <= s.estoque_minimo || s.urgencia === "COMPRAR_AGORA" || s.urgencia === "PROGRAMAR_COMPRA") {
         comprarEmBreve.push(s);
       } else {
         monitorar.push(s);

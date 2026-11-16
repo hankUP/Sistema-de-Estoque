@@ -548,7 +548,7 @@ export default function PurchasesPage() {
 
       {/* ===================== MODAL NOVO PEDIDO ===================== */}
       <Dialog open={novoPedidoOpen} onOpenChange={handleCloseModal}>
-        <DialogContent
+        <DialogContent aria-describedby={undefined}
           className={cn(
             "p-0 gap-0 flex flex-col",
             telaCheia
@@ -850,7 +850,7 @@ export default function PurchasesPage() {
 
       {/* ===================== MODAL RECEBIMENTO ===================== */}
       <Dialog open={!!recebimentoOrder} onOpenChange={(open) => { if (!open) { setRecebimentoOrder(null); setRecebimentoQtd(""); setRecebimentoData(""); } }}>
-        <DialogContent className="max-w-md">
+        <DialogContent aria-describedby={undefined} className="max-w-md">
           <DialogHeader>
             <DialogTitle>Registrar recebimento</DialogTitle>
           </DialogHeader>

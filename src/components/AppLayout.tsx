@@ -52,7 +52,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const currentPage = allNavItems.find(n => n.to === location.pathname);
+  // Subpáginas (ex.: /producao/:id) herdam o título da seção.
+  const currentPage = allNavItems.find(n => n.to === location.pathname)
+    ?? allNavItems.find(n => location.pathname.startsWith(`${n.to}/`));
 
   const handleLogout = async () => {
     await fetch("/api/session", { method: "DELETE", credentials: "same-origin" });
