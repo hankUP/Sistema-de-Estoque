@@ -15,14 +15,13 @@ const technicianReadExtra = new Set([
 ]);
 const technicianWrites = new Map([
   ['movements', new Set(['insert'])],
-  ['production_orders', new Set(['update'])],
   ['production_order_stages', new Set(['insert', 'update'])],
   ['production_stage_pauses', new Set(['insert', 'update'])],
   ['production_order_substitutions', new Set(['insert', 'update', 'upsert', 'delete'])],
 ]);
+// Histórico de preços de fornecedores só pode ser alterado por Admin e Coordenador.
 const technicianRpcs = new Set([
   'work_queue_availability', 'start_production_order', 'complete_production_order',
-  'registrar_preco_historico',
 ]);
 // Registros cujo autor é fixado na criação e nunca pode ser alterado.
 const recordActorColumns = new Map([
@@ -83,13 +82,16 @@ export async function createSession(pool, userId) {
   return token;
 }
 
+// Cookie seguro (somente HTTPS) por padrão. Para uso local em http, defina COOKIE_SECURE=false no .env.
+function secureCookies() { return process.env.COOKIE_SECURE !== 'false'; }
+
 export function sessionCookie(token) {
-  const secure = process.env.COOKIE_SECURE === 'true' ? '; Secure' : '';
+  const secure = secureCookies() ? '; Secure' : '';
   return `estoque_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${sessionHours * 3600}${secure}`;
 }
 
 export function clearSessionCookie() {
-  const secure = process.env.COOKIE_SECURE === 'true' ? '; Secure' : '';
+  const secure = secureCookies() ? '; Secure' : '';
   return `estoque_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${secure}`;
 }
 
@@ -114,13 +116,8 @@ function queryPermission(user, input) {
     : [];
   if (relations.some((table) => !canRead(table))) return false;
   if (input.action === 'select') return canRead(input.table);
-  if (user.role === 'TECNICO') {
-    if (input.table === 'production_orders' && input.action === 'update') {
-      const allowed = new Set(['montador_nome', 'modo_execucao']);
-      return Object.keys(input.values || {}).length > 0 && Object.keys(input.values).every((key) => allowed.has(key));
-    }
-    return technicianWrites.get(input.table)?.has(input.action) || false;
-  }
+  // Ordens de produção só são alteradas por Admin/Coordenador; os demais iniciam e concluem pelas RPCs.
+  if (user.role === 'TECNICO') return technicianWrites.get(input.table)?.has(input.action) || false;
   return user.role === 'OPERACIONAL'
     && ((input.table === 'production_order_stages' && input.action === 'update')
       || (input.table === 'production_stage_pauses' && ['insert', 'update'].includes(input.action)));

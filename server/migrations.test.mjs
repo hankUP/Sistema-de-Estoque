@@ -388,3 +388,32 @@ test('recebimento de compra é atômico e ajuste aceita quantidades fracionadas'
     assert.equal(balance.rows[0].total, 1);
   } finally { await database.close(); }
 });
+
+test('Admin/Coordenador corrigem o montador escolhendo um usuário ativo', async () => {
+  const database = new PGlite();
+  try {
+    const directory = join(import.meta.dirname, 'migrations');
+    for (const file of (await readdir(directory)).filter((name) => name.endsWith('.sql')).sort()) {
+      await database.exec(await readFile(join(directory, file), 'utf8'));
+    }
+    const pool = { query: (...args) => database.query(...args), connect: async () => ({
+      query: (...args) => database.query(...args), release() {},
+    }) };
+    const schema = await loadSchema(pool);
+    const center = (await database.query("INSERT INTO centros_custo (nome, tipo) VALUES ('Montagem', 'SETOR') RETURNING id")).rows[0].id;
+    const product = (await database.query("INSERT INTO items (nome, tipo, unidade) VALUES ('Kit', 'PF', 'un') RETURNING id")).rows[0].id;
+    const order = (await database.query(`INSERT INTO production_orders (item_id, quantidade, centro_custo_id, status, montador_nome)
+      VALUES ($1, 1, $2, 'EM_PRODUCAO', 'Administrador') RETURNING id`, [product, center])).rows[0].id;
+    const operator = (await database.query(`INSERT INTO app_users (username, display_name, password_salt, password_hash, role)
+      VALUES ('joana', 'Joana Silva', 'x', 'x', 'OPERACIONAL') RETURNING id`)).rows[0].id;
+    const inactive = (await database.query(`INSERT INTO app_users (username, display_name, password_salt, password_hash, role, active)
+      VALUES ('exfuncionario', 'Ex Funcionário', 'x', 'x', 'OPERACIONAL', false) RETURNING id`)).rows[0].id;
+    const setMontador = (userId) => executeQuery(pool, schema, { action: 'rpc', name: 'set_production_order_montador',
+      args: { _id: order, _user_id: userId } }, { display_name: 'Coordenação' });
+
+    assert.equal((await setMontador(operator)).data.montador_nome, 'Joana Silva');
+    await assert.rejects(() => setMontador(inactive), /usuário ativo/);
+    await database.query("UPDATE production_orders SET status = 'PLANEJADA' WHERE id = $1", [order]);
+    await assert.rejects(() => setMontador(operator), /não foi iniciada/);
+  } finally { await database.close(); }
+});

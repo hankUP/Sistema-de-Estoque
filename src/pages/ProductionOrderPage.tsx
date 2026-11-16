@@ -22,6 +22,7 @@ import {
   useSetShippingInfo,
   useMarkReceived,
   useRevertToPlanned,
+  useSetOrderMontador,
   useStartProductionOrder,
 } from "@/hooks/useProductionOrders";
 import { toast } from "sonner";
@@ -83,6 +84,26 @@ export default function ProductionOrderPage() {
   const setShipping = useSetShippingInfo();
   const markReceived = useMarkReceived();
   const revertToPlanned = useRevertToPlanned();
+  const setMontador = useSetOrderMontador();
+  const { data: people = [] } = useQuery<{ id: string; displayName: string }[]>({
+    queryKey: ["operators", "todos"],
+    enabled: canManage,
+    queryFn: async () => {
+      const response = await fetch("/api/operators?todos=1", { credentials: "same-origin" });
+      if (!response.ok) throw new Error("Não foi possível carregar os usuários.");
+      return response.json();
+    },
+  });
+
+  const handleMontadorChange = async (userId: string) => {
+    if (!userId || !order) return;
+    try {
+      await setMontador.mutateAsync({ orderId: order.id, userId });
+      toast.success("Montador corrigido.");
+    } catch (e: any) {
+      toast.error(e.message || "Não foi possível corrigir o montador.");
+    }
+  };
 
   const [startDialogOpen, setStartDialogOpen] = useState(false);
   const [shippingOpen, setShippingOpen] = useState(false);
@@ -225,7 +246,25 @@ export default function ProductionOrderPage() {
 
           <div className="text-right space-y-2">
             <StatusBadge tone={displayStatus.tone}>{displayStatus.label}</StatusBadge>
-            {order.montador_nome && (
+            {canManage && order.status !== "PLANEJADA" ? (
+              <label className="text-sm text-muted-foreground flex items-center justify-end gap-1.5">
+                <User className="h-3.5 w-3.5" />
+                Montador:
+                <select
+                  aria-label="Corrigir montador"
+                  title="Admin e Coordenador podem corrigir o montador"
+                  className="rounded-md border border-input bg-background px-2 py-1 text-foreground font-medium focus:border-primary focus:outline-none"
+                  value={people.find((p) => p.displayName === order.montador_nome)?.id ?? ""}
+                  disabled={setMontador.isPending}
+                  onChange={(e) => handleMontadorChange(e.target.value)}
+                >
+                  {!people.some((p) => p.displayName === order.montador_nome) && (
+                    <option value="" disabled>{order.montador_nome || "Selecione"}</option>
+                  )}
+                  {people.map((p) => <option key={p.id} value={p.id}>{p.displayName}</option>)}
+                </select>
+              </label>
+            ) : order.montador_nome && (
               <div className="text-sm text-muted-foreground flex items-center justify-end gap-1.5">
                 <User className="h-3.5 w-3.5" />
                 Montador: <span className="text-foreground font-medium">{order.montador_nome}</span>

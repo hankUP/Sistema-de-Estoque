@@ -78,9 +78,19 @@ test('grupos são verificados na API e somente Admin cria contas', async () => {
     const upsert = { table: 'production_order_substitutions', action: 'upsert', values: { usuario_nome: 'Outra pessoa' } };
     await authorizeQuery(db, technician, upsert);
     assert.equal(upsert.values.usuario_nome, 'Técnico');
+    // Só Admin/Coordenador alteram ordens; montador digitado é ignorado (correção é pela RPC com usuário cadastrado).
+    await assert.rejects(authorizeQuery(db, technician, {
+      table: 'production_orders', action: 'update', values: { montador_nome: 'Outra pessoa' },
+    }), /Sem permissão/);
     const montador = { table: 'production_orders', action: 'update', values: { montador_nome: 'Outra pessoa' } };
-    await authorizeQuery(db, technician, montador);
-    assert.equal(montador.values.montador_nome, 'Técnico');
+    await authorizeQuery(db, coordinator, montador);
+    assert.equal(montador.values.montador_nome, 'Coordenação');
+    await authorizeQuery(db, coordinator, { action: 'rpc', name: 'set_production_order_montador', args: {} });
+    await assert.rejects(authorizeQuery(db, technician, { action: 'rpc', name: 'set_production_order_montador', args: {} }), /Sem permissão/);
+    await assert.rejects(authorizeQuery(db, operator, { action: 'rpc', name: 'set_production_order_montador', args: {} }), /Sem permissão/);
+    // Histórico de preços: só Admin/Coordenador.
+    await assert.rejects(authorizeQuery(db, technician, { action: 'rpc', name: 'registrar_preco_historico', args: {} }), /Sem permissão/);
+    await authorizeQuery(db, coordinator, { action: 'rpc', name: 'registrar_preco_historico', args: {} });
     await assert.rejects(authorizeQuery(db, admin, {
       table: 'movements', action: 'update', values: { usuario_nome: 'Outra pessoa' },
     }), /não pode ser alterado/);

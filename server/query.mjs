@@ -518,6 +518,29 @@ export async function executeQuery(pool, schema, input, user = null) {
         throw error;
       } finally { client.release(); }
     }
+    if (input.name === 'set_production_order_montador') {
+      // Correção do montador por Admin/Coordenador (permissão verificada em auth.mjs).
+      // O nome vem do cadastro de usuários; as movimentações já registradas não mudam.
+      const args = input.args || {};
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        const account = await client.query('SELECT display_name FROM public.app_users WHERE id = $1 AND active', [args._user_id]);
+        if (!account.rowCount) throw new Error('Selecione um usuário ativo.');
+        const order = await client.query('SELECT status FROM public.production_orders WHERE id = $1 FOR UPDATE', [args._id]);
+        if (!order.rowCount) throw new Error('Ordem não encontrada.');
+        if (order.rows[0].status === 'PLANEJADA') throw new Error('A ordem ainda não foi iniciada.');
+        const name = account.rows[0].display_name;
+        const updated = await client.query('UPDATE public.production_orders SET montador_nome = $2 WHERE id = $1 RETURNING *', [args._id, name]);
+        await client.query(`UPDATE public.production_order_stages SET montador_nome = $2
+          WHERE production_order_id = $1 AND status <> 'CONCLUIDA'`, [args._id, name]);
+        await client.query('COMMIT');
+        return { data: updated.rows[0], count: null };
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally { client.release(); }
+    }
     if (input.name === 'receive_purchase_order') {
       // Recebimento atômico: entrada no estoque, registro do recebimento e saldo do pedido
       // numa única transação, com o pedido travado para evitar recebimentos simultâneos.

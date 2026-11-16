@@ -230,6 +230,22 @@ export function useStartProductionOrder() {
   });
 }
 
+/** Correção do montador por Admin/Coordenador, escolhendo um usuário cadastrado. */
+export function useSetOrderMontador() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ orderId, userId }: { orderId: string; userId: string }) => {
+      const { error } = await db.rpc('set_production_order_montador', { _id: orderId, _user_id: userId });
+      if (error) throw error;
+    },
+    onSuccess: (_data, { orderId }) => {
+      qc.invalidateQueries({ queryKey: ['production_orders'] });
+      qc.invalidateQueries({ queryKey: ['production_order', orderId] });
+      qc.invalidateQueries({ queryKey: ['production_order_stages'] });
+    },
+  });
+}
+
 export function useDeleteProductionOrder() {
   const qc = useQueryClient();
   return useMutation({

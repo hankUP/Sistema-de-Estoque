@@ -13,6 +13,18 @@ const pool = new pg.Pool({ ...(process.env.DATABASE_URL ? { connectionString: pr
 await pool.query('SELECT 1');
 const schema = await loadSchema(pool);
 const failedLogins = new Map();
+
+// Remove sessões vencidas ao iniciar e a cada hora.
+async function purgeExpiredSessions() {
+  try {
+    const result = await pool.query('DELETE FROM public.app_sessions WHERE expires_at <= now()');
+    if (result.rowCount) console.log(`Sessões vencidas removidas: ${result.rowCount}`);
+  } catch (error) {
+    console.error('Falha ao remover sessões vencidas:', error.message);
+  }
+}
+await purgeExpiredSessions();
+setInterval(purgeExpiredSessions, 60 * 60_000).unref();
 const host = process.env.HOST || '127.0.0.1';
 const port = Number(process.env.PORT || 3001);
 const staticRoot = resolve(import.meta.dirname, '../dist');
@@ -112,8 +124,10 @@ const server = createServer(async (request, response) => {
       if (user.must_change_password) return json(response, 403, { error: 'Troque sua senha antes de continuar.' });
       if (pathname === '/api/operators' && request.method === 'GET') {
         if (user.role !== 'ADMIN' && user.role !== 'COORDENADOR') return json(response, 403, { error: 'Sem permissão.' });
+        // ?todos=1 lista todos os usuários ativos (correção de montador); sem ele, só quem recebe atribuições.
+        const everyone = new URL(request.url, 'http://localhost').searchParams.get('todos') === '1';
         const operators = await pool.query(`SELECT id, display_name, role FROM public.app_users
-          WHERE active AND role IN ('TECNICO', 'OPERACIONAL') ORDER BY display_name`);
+          WHERE active AND ($1 OR role IN ('TECNICO', 'OPERACIONAL')) ORDER BY display_name`, [everyone]);
         return json(response, 200, operators.rows.map((row) => ({ id: row.id, displayName: row.display_name, role: row.role })));
       }
       if (pathname === '/api/users' || pathname.startsWith('/api/users/')) {
