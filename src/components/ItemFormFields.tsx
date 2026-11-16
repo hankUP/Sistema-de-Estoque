@@ -4,6 +4,7 @@ import { FieldLabel } from "@/components/FieldLabel";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, Settings2, Info } from "lucide-react";
 import { MoneyInput } from "@/components/MoneyInput";
+import { calcSuggestions } from "@/lib/estoqueSugestoes";
 
 type ItemFormState = {
   nome: string;
@@ -34,37 +35,6 @@ type Props = {
   onAdvancedOpenChange?: (open: boolean) => void;
   extraBasicFields?: ReactNode;
 };
-
-/**
- * Auto-calculate suggestions based on formulas:
- * - Estoque Mínimo = Consumo Diário × Lead Time
- * - Estoque Ideal = Estoque Mínimo + (Consumo Diário × Lead Time)  = 2 × Consumo × Lead Time
- * - Estoque Máximo = Estoque Ideal × 1.5
- */
-export function calcSuggestions(consumoDiario: number, leadTime: number) {
-  const min = Math.round(consumoDiario * leadTime * 100) / 100;
-  const ideal = Math.round((min + consumoDiario * leadTime) * 100) / 100;
-  const max = Math.round(ideal * 1.5 * 100) / 100;
-  return { min, ideal, max };
-}
-
-export function useAutoCalcEstoque(
-  consumoDiario: string,
-  leadTime: string,
-  onChange: (field: keyof ItemFormState, value: string) => void,
-  manualOverrides: React.MutableRefObject<Set<string>>
-) {
-  useEffect(() => {
-    const cd = Number(consumoDiario);
-    const lt = Number(leadTime);
-    if (cd > 0 && lt > 0) {
-      const s = calcSuggestions(cd, lt);
-      if (!manualOverrides.current.has("estoqueMinimo")) onChange("estoqueMinimo", String(s.min));
-      if (!manualOverrides.current.has("estoqueIdeal")) onChange("estoqueIdeal", String(s.ideal));
-      if (!manualOverrides.current.has("estoqueMaximo")) onChange("estoqueMaximo", String(s.max));
-    }
-  }, [consumoDiario, leadTime]);
-}
 
 export function ItemFormFields({
   state,

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ItemFormFields, calcSuggestions, type ItemFormState } from "@/components/ItemFormFields";
+import { ItemFormFields, type ItemFormState } from "@/components/ItemFormFields";
+import { calcSuggestions } from "@/lib/estoqueSugestoes";
 import { ItemFornecedoresEditor } from "@/components/ItemFornecedoresEditor";
 import { CostCenterSelect } from "@/components/CostCenterSelect";
 import { FieldLabel } from "@/components/FieldLabel";

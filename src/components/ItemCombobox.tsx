@@ -7,29 +7,7 @@ import { cn } from "@/lib/utils";
 import type { Item } from "@/hooks/useItems";
 import { useStock } from "@/hooks/useStock";
 import { formatBRL } from "@/lib/money";
-
-const RECENT_KEY = "movements:recent-items";
-const MAX_RECENT = 5;
-
-export function pushRecentItem(itemId: string) {
-  try {
-    const raw = localStorage.getItem(RECENT_KEY);
-    const list: string[] = raw ? JSON.parse(raw) : [];
-    const next = [itemId, ...list.filter((id) => id !== itemId)].slice(0, MAX_RECENT);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-  } catch {
-    /* ignore */
-  }
-}
-
-function getRecentItems(): string[] {
-  try {
-    const raw = localStorage.getItem(RECENT_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
+import { getRecentItems } from "@/lib/recentItems";
 
 interface ItemComboboxProps {
   items: Item[] | undefined;
@@ -53,7 +31,11 @@ export function ItemCombobox({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const { data: stock } = useStock(30);
 
-  const recent = useMemo(() => getRecentItems(), [open]);
+  // Relê os itens recentes (localStorage) sempre que a lista é aberta.
+  const [recent, setRecent] = useState<string[]>(getRecentItems);
+  useEffect(() => {
+    if (open) setRecent(getRecentItems());
+  }, [open]);
 
   const stockMap = useMemo(() => {
     const m = new Map<string, { fisico: number; custo: number }>();

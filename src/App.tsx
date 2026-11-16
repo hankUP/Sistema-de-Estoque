@@ -1,10 +1,12 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./queryClient";
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
-import { AuthProvider, canAccess, type AuthUser } from './auth';
+import { canAccess, type AuthUser } from './auth';
+import { AuthProvider } from './AuthProvider';
 const StockPage = lazy(() => import("@/pages/StockPage"));
 const MovementsPage = lazy(() => import("@/pages/MovementsPage"));
 const CostCentersPage = lazy(() => import("@/pages/CostCentersPage"));
@@ -18,8 +20,6 @@ const SugestaoComprasPage = lazy(() => import("@/pages/SugestaoComprasPage"));
 const PedidosPage = lazy(() => import("@/pages/PedidosPage"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const UsersPage = lazy(() => import("@/pages/UsersPage"));
-
-export const queryClient = new QueryClient();
 
 function Guard({ user, path, children }: { user: AuthUser; path: string; children: React.ReactNode }) {
   return canAccess(user.role, path) ? <>{children}</> : <Navigate to="/estoque" replace />;

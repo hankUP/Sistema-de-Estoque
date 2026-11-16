@@ -67,7 +67,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Identidade do sistema */}
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-sidebar-border">
+        <div className="flex items-center gap-3 px-5 h-[64px] border-b border-sidebar-border">
           <BrandMark subtitle="Estoque, Compras e Produção" className="flex-1" />
           <button
             className="lg:hidden p-1 rounded-md hover:bg-sidebar-accent shrink-0"

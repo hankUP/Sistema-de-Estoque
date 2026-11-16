@@ -1052,7 +1052,8 @@ export default function SugestaoComprasPage() {
   // ---------------------------------------------------------------------
   // Resumo global no topo: total de itens, urgentes e custo estimado.
   // ---------------------------------------------------------------------
-  const resumoGlobal = useMemo(() => {
+  // Calculado a cada renderização: depende de preços e vínculos que chegam depois das sugestões.
+  const resumoGlobal = (() => {
     let custoTotal = 0;
     let custoIndisponivel = false;
     sugestoes.forEach((s) => {
@@ -1068,7 +1069,7 @@ export default function SugestaoComprasPage() {
       custoTotal,
       custoIndisponivel,
     };
-  }, [sugestoes, comprarAgora, comprarEmBreve, monitorar, fornecedorOverride]);
+  })();
 
   return (
     <div className="space-y-4">

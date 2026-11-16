@@ -10,7 +10,7 @@ import {
   useCreateMovement,
   type MovementType,
 } from "@/hooks/useMovements";
-import { pushRecentItem } from "@/components/ItemCombobox";
+import { pushRecentItem } from "@/lib/recentItems";
 import { CostCenterSelect } from "@/components/CostCenterSelect";
 import { useAuth } from "@/auth";
 

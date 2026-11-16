@@ -189,6 +189,5 @@ function round(n: number) {
 export function logCalculo(itemNome: string, calc: SugestaoCalculo) {
   if (typeof window === "undefined") return;
   if (localStorage.getItem("debug_reposicao") !== "1") return;
-  // eslint-disable-next-line no-console
   console.debug(`[reposicao] ${itemNome}`, calc);
 }

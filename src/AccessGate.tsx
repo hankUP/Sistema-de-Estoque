@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import App, { queryClient } from './App';
+import App from './App';
+import { queryClient } from './queryClient';
 import type { AuthUser } from './auth';
 import { BrandMark } from './components/BrandMark';
 

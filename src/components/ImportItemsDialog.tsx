@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import * as XLSX from "xlsx";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -7,7 +6,7 @@ import { HelpCircle, Upload, FileSpreadsheet, CheckCircle2, AlertCircle } from "
 import { db } from "@/db/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { calcSuggestions } from "@/components/ItemFormFields";
+import { calcSuggestions } from "@/lib/estoqueSugestoes";
 
 type Props = {
   open: boolean;
@@ -137,6 +136,8 @@ export function ImportItemsDialog({ open, onOpenChange }: Props) {
         return;
       }
       const buf = await file.arrayBuffer();
+      // A biblioteca de planilhas é grande: só é baixada quando alguém importa um arquivo.
+      const XLSX = await import("xlsx");
       const wb = XLSX.read(buf, { type: "array" });
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json<any>(sheet, { defval: "" });

@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext } from 'react';
 
 export type Role = 'ADMIN' | 'COORDENADOR' | 'TECNICO' | 'OPERACIONAL';
 export type AuthUser = {
@@ -13,10 +13,8 @@ export const roleNames: Record<Role, string> = {
   ADMIN: 'Admin', COORDENADOR: 'Coordenador', TECNICO: 'Técnico', OPERACIONAL: 'Operacional',
 };
 
-const AuthContext = createContext<AuthUser | null>(null);
-export function AuthProvider({ user, children }: { user: AuthUser; children: ReactNode }) {
-  return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>;
-}
+// O componente AuthProvider fica em AuthProvider.tsx.
+export const AuthContext = createContext<AuthUser | null>(null);
 export function useAuth() {
   const user = useContext(AuthContext);
   if (!user) throw new Error('Usuário não autenticado.');

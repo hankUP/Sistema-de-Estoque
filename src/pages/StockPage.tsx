@@ -81,7 +81,7 @@ export default function StockPage() {
     setSearchParams(nextParams, { replace: true });
   }, [searchParams, setSearchParams, stock, user.role]);
 
-  const stockWithBase = stock ?? [];
+  const stockWithBase = useMemo(() => stock ?? [], [stock]);
 
   const filtered = useMemo(() => {
     if (!stockWithBase) return [];
