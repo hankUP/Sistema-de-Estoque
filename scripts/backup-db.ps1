@@ -10,13 +10,15 @@
     powershell -ExecutionPolicy Bypass -File scripts\backup-db.ps1 -CopiaExterna "D:\Backups"
 #>
 param(
-  [string]$Destino = '..\backups\diario',
+  # Padrão: pasta backups\diario ao lado da pasta do projeto.
+  [string]$Destino = '',
   [string]$CopiaExterna = '',
   [int]$Dias = 14
 )
 
 $ErrorActionPreference = 'Stop'
 $projeto = Split-Path -Parent $PSScriptRoot
+if (-not $Destino) { $Destino = Join-Path (Split-Path -Parent $projeto) 'backups\diario' }
 $log = Join-Path $Destino 'backup.log'
 New-Item -ItemType Directory -Force $Destino | Out-Null
 

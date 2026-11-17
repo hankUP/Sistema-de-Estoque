@@ -70,7 +70,7 @@ O configurador de kits personalizados foi retirado da interface. Os kits conclu�
 
 ### Backup
 
-**Instalação atual (este PC):** a tarefa agendada do Windows **Gravae - Backup do estoque** roda `scripts/backup-db.ps1` todo dia às 12:30 (ou assim que o PC for ligado, se estava desligado). O script gera o dump, confere se ele pode ser lido pelo `pg_restore` e mantém os últimos 14 dias em `..\backups\diario`. Confira o `backup.log` dessa pasta: linhas com `ERRO` indicam falha.
+**Instalação atual (este PC):** a tarefa agendada do Windows **Gravae - Backup do estoque** roda `scripts/backup-db.ps1` todo dia às 12:30 (ou assim que o PC for ligado, se estava desligado). O script gera o dump, confere se ele pode ser lido pelo `pg_restore` e mantém os últimos 14 dias em `backups\diario` (ao lado da pasta do projeto). Confira o `backup.log` dessa pasta: linhas com `ERRO` indicam falha.
 
 ```powershell
 # Backup imediato
