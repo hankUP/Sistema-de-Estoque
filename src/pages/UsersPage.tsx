@@ -77,9 +77,11 @@ export default function UsersPage() {
             <input required minLength={2} maxLength={120} value={displayName} onChange={(e) => setDisplayName(e.target.value)}
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2" />
           </label>
-          <label className="text-sm">Login
-            <input required minLength={3} maxLength={40} pattern="[a-zA-Z0-9._-]+" value={username}
-              onChange={(e) => setUsername(e.target.value)} placeholder="ex: joana.silva"
+          <label className="text-sm">Login (e-mail ou usuário)
+            <input required minLength={3} maxLength={120} pattern="[a-zA-Z0-9._%+\-]+(@[a-zA-Z0-9\-]+(\.[a-zA-Z0-9\-]+)*\.[a-zA-Z]{2,})?"
+              title="Um e-mail (ex.: nome@empresa.com.br) ou um login com letras, números, ponto, hífen ou _."
+              value={username} autoComplete="off"
+              onChange={(e) => setUsername(e.target.value.trim())} placeholder="ex: nome@empresa.com.br"
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2" />
           </label>
           <label className="text-sm">Grupo

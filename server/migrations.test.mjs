@@ -10,7 +10,7 @@ test('migrations, CRUD, relações e regras de estoque', async () => {
   try {
     const directory = join(import.meta.dirname, 'migrations');
     const files = (await readdir(directory)).filter((name) => name.endsWith('.sql')).sort();
-    assert.deepEqual(files, ['001_initial.sql', '002_remove_unused_sections.sql', '003_movement_cost_centers.sql', '004_allow_existing_orders_with_inactive_centers.sql', '005_default_departments.sql', '006_kit_plans.sql', '007_kit_templates.sql', '008_kit_workflow.sql', '009_shared_work_queue.sql', '010_production_completion_trace.sql', '011_subassembly_destination.sql', '012_user_accounts.sql']);
+    assert.deepEqual(files, ['001_initial.sql', '002_remove_unused_sections.sql', '003_movement_cost_centers.sql', '004_allow_existing_orders_with_inactive_centers.sql', '005_default_departments.sql', '006_kit_plans.sql', '007_kit_templates.sql', '008_kit_workflow.sql', '009_shared_work_queue.sql', '010_production_completion_trace.sql', '011_subassembly_destination.sql', '012_user_accounts.sql', '013_email_login.sql']);
     for (const file of files) {
       const sql = await readFile(join(directory, file), 'utf8');
       await database.exec(sql);

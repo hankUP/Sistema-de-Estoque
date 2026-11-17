@@ -105,5 +105,17 @@ test('grupos são verificados na API e somente Admin cria contas', async () => {
     assert.equal(response.status, 201);
     assert.equal(response.value.username, 'joana');
     assert.equal((await db.query('SELECT count(*)::int AS total FROM public.app_users')).rows[0].total, 2);
+
+    // Login por e-mail: aceito (em minúsculas) na criação e no banco; formatos inválidos recusados.
+    await handleUserRoute(db, { method: 'POST' }, response, '/api/users', admin,
+      async () => ({ ...body, username: 'Nome@Empresa.com.br', displayName: 'Nome' }), json);
+    assert.equal(response.status, 201);
+    assert.equal(response.value.username, 'nome@empresa.com.br');
+    for (const invalid of ['nome@', 'nome@empresa', 'nome empresa@empresa.com.br', '@empresa.com.br']) {
+      await assert.rejects(handleUserRoute(db, { method: 'POST' }, response, '/api/users', admin,
+        async () => ({ ...body, username: invalid, displayName: 'Nome' }), json), /e-mail/, invalid);
+    }
+    await assert.rejects(db.query(`INSERT INTO public.app_users (username, display_name, password_salt, password_hash, role)
+      VALUES ('nome@empresa', 'Ian', 'x', 'x', 'OPERACIONAL')`), /app_users_username_format/);
   } finally { await db.close(); }
 });

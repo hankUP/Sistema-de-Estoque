@@ -95,7 +95,7 @@ export default function AccessGate() {
         {status === 'offline' && <p className="mt-4 text-destructive">Servidor indisponível. Recarregue a página.</p>}
         {status === 'login' && (
           <form onSubmit={login} className="mt-6 space-y-4">
-            <label className="block text-sm font-medium" htmlFor="username">Usuário</label>
+            <label className="block text-sm font-medium" htmlFor="username">E-mail ou usuário</label>
             <input id="username" autoComplete="username" required value={username}
               onChange={(event) => setUsername(event.target.value)}
               className={inputClass} />

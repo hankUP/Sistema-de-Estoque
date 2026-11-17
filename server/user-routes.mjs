@@ -1,6 +1,10 @@
 import { hashPassword, verifyPassword, validPassword, publicUser, assertRole, hashToken, sessionToken } from './auth.mjs';
 
-const usernamePattern = /^[a-z0-9._-]{3,40}$/;
+// Login: nome de usuário (3 a 40: letras, números, ponto, hífen ou _) ou e-mail (ex.: nome@empresa.com.br).
+// Mesma regra do banco (migração 013).
+const loginPattern = /^[a-z0-9._-]{3,40}$/;
+const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
+const validLogin = (value) => loginPattern.test(value) || (value.length <= 120 && emailPattern.test(value));
 const uuidPattern = /^[a-f0-9-]{36}$/i;
 const validRole = (value) => ['ADMIN', 'COORDENADOR', 'TECNICO', 'OPERACIONAL'].includes(value);
 const badRequest = (message) => { throw Object.assign(new Error(message), { status: 400 }); };
@@ -44,7 +48,7 @@ export async function handleUserRoute(pool, request, response, pathname, user, r
     const body = await readJson(request);
     const username = String(body.username || '').trim().toLowerCase();
     const displayName = String(body.displayName || '').trim();
-    if (!usernamePattern.test(username)) badRequest('Login deve ter 3 a 40 caracteres: letras, números, ponto, hífen ou _.');
+    if (!validLogin(username)) badRequest('Use um e-mail (ex.: nome@empresa.com.br) ou um login de 3 a 40 caracteres: letras, números, ponto, hífen ou _.');
     if (displayName.length < 2 || displayName.length > 120) badRequest('Nome deve ter entre 2 e 120 caracteres.');
     if (!validRole(body.role)) badRequest('Grupo inválido.');
     if (!validPassword(body.password)) badRequest('A senha inicial deve ter entre 8 e 128 caracteres.');
