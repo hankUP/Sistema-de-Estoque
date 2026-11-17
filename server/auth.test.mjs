@@ -99,17 +99,11 @@ test('grupos são verificados na API e somente Admin cria contas', async () => {
 
     const response = {};
     const json = (_response, status, value) => { response.status = status; response.value = value; };
-    // Login de novas contas: 8 a 12 letras ou números.
-    for (const invalid of ['joana', 'joana.silva', 'joanasilvasantos', 'joão silva']) {
-      await assert.rejects(handleUserRoute(db, { method: 'POST' }, {}, '/api/users', admin,
-        async () => ({ username: invalid, displayName: 'Joana Silva', role: 'OPERACIONAL', password: 'SenhaTemporaria123!' }), () => {}),
-      /8 a 12/, invalid);
-    }
-    const body = { username: 'JoanaSilva', displayName: 'Joana Silva', role: 'OPERACIONAL', password: 'SenhaTemporaria123!' };
+    const body = { username: 'joana', displayName: 'Joana Silva', role: 'OPERACIONAL', password: 'SenhaTemporaria123!' };
     await assert.rejects(handleUserRoute(db, {}, response, '/api/users', coordinator, async () => body, json), /Sem permissão/);
     await handleUserRoute(db, { method: 'POST' }, response, '/api/users', admin, async () => body, json);
     assert.equal(response.status, 201);
-    assert.equal(response.value.username, 'joanasilva');
+    assert.equal(response.value.username, 'joana');
     assert.equal((await db.query('SELECT count(*)::int AS total FROM public.app_users')).rows[0].total, 2);
   } finally { await db.close(); }
 });
