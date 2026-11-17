@@ -1,6 +1,8 @@
 import { hashPassword, verifyPassword, validPassword, publicUser, assertRole, hashToken, sessionToken } from './auth.mjs';
 
-const usernamePattern = /^[a-z0-9._-]{3,40}$/;
+// Novas contas: 8 a 12 letras ou números, sem caracteres especiais.
+// O banco ainda aceita o formato antigo (3 a 40) para contas existentes, como "admin".
+const usernamePattern = /^[a-z0-9]{8,12}$/;
 const uuidPattern = /^[a-f0-9-]{36}$/i;
 const validRole = (value) => ['ADMIN', 'COORDENADOR', 'TECNICO', 'OPERACIONAL'].includes(value);
 const badRequest = (message) => { throw Object.assign(new Error(message), { status: 400 }); };
@@ -44,7 +46,7 @@ export async function handleUserRoute(pool, request, response, pathname, user, r
     const body = await readJson(request);
     const username = String(body.username || '').trim().toLowerCase();
     const displayName = String(body.displayName || '').trim();
-    if (!usernamePattern.test(username)) badRequest('Login deve ter 3 a 40 caracteres: letras, números, ponto, hífen ou _.');
+    if (!usernamePattern.test(username)) badRequest('Login deve ter de 8 a 12 caracteres, usando só letras (sem acento) e números.');
     if (displayName.length < 2 || displayName.length > 120) badRequest('Nome deve ter entre 2 e 120 caracteres.');
     if (!validRole(body.role)) badRequest('Grupo inválido.');
     if (!validPassword(body.password)) badRequest('A senha inicial deve ter entre 8 e 128 caracteres.');

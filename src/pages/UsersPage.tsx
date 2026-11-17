@@ -77,9 +77,10 @@ export default function UsersPage() {
             <input required minLength={2} maxLength={120} value={displayName} onChange={(e) => setDisplayName(e.target.value)}
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2" />
           </label>
-          <label className="text-sm">Login
-            <input required minLength={3} maxLength={40} pattern="[a-zA-Z0-9._-]+" value={username}
-              onChange={(e) => setUsername(e.target.value)} placeholder="ex: joana.silva"
+          <label className="text-sm">Login (8 a 12 letras ou números)
+            <input required minLength={8} maxLength={12} pattern="[a-zA-Z0-9]{8,12}"
+              title="De 8 a 12 caracteres, só letras (sem acento) e números." value={username}
+              onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))} placeholder="ex: joanasilva"
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2" />
           </label>
           <label className="text-sm">Grupo
