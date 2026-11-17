@@ -118,8 +118,9 @@ const server = createServer(async (request, response) => {
       }
       const user = await findSession(pool, request);
       if (!user) return json(response, 401, { error: 'Sessão expirada. Entre novamente.' });
+      // "return await": sem o await, erros de validação escapavam do catch abaixo e derrubavam o servidor.
       if (pathname === '/api/password' && request.method === 'POST') {
-        return handleUserRoute(pool, request, response, pathname, user, readJson, json);
+        return await handleUserRoute(pool, request, response, pathname, user, readJson, json);
       }
       if (user.must_change_password) return json(response, 403, { error: 'Troque sua senha antes de continuar.' });
       if (pathname === '/api/operators' && request.method === 'GET') {
@@ -131,7 +132,7 @@ const server = createServer(async (request, response) => {
         return json(response, 200, operators.rows.map((row) => ({ id: row.id, displayName: row.display_name, role: row.role })));
       }
       if (pathname === '/api/users' || pathname.startsWith('/api/users/')) {
-        return handleUserRoute(pool, request, response, pathname, user, readJson, json);
+        return await handleUserRoute(pool, request, response, pathname, user, readJson, json);
       }
       if (pathname === '/api/query' && request.method === 'POST') {
         const input = await readJson(request);
@@ -152,3 +153,5 @@ const server = createServer(async (request, response) => {
 
 server.listen(port, host, () => console.log(`Servidor disponível em http://${host}:${port}`));
 process.on('SIGINT', async () => { server.close(); await pool.end(); process.exit(0); });
+// Rede de segurança: um erro assíncrono não tratado é registrado, mas não derruba o sistema para todos.
+process.on('unhandledRejection', (error) => console.error('Erro não tratado:', error));
