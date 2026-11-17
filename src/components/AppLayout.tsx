@@ -70,7 +70,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       )}>
         {/* Identidade do sistema */}
         <div className="flex items-center gap-3 px-5 h-[64px] border-b border-sidebar-border">
-          <BrandMark subtitle="Estoque, Compras e Produção" className="flex-1" />
+          <Link
+            to="/"
+            onClick={() => setMobileOpen(false)}
+            className="flex-1 min-w-0 rounded-md transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Ir para o início"
+            title="Ir para o início"
+          >
+            <BrandMark subtitle="Estoque, Compras e Produção" />
+          </Link>
           <button
             className="lg:hidden p-1 rounded-md hover:bg-sidebar-accent shrink-0"
             onClick={() => setMobileOpen(false)}
